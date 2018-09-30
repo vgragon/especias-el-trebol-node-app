@@ -1,31 +1,20 @@
 let express = require('express');
 let router = express.Router();
-
-let employees = [
-    {
-        "id": "0",
-        "givenName": "Vicente",
-        "familyName": "Grajeda"
-    },
-    {
-        "id": "1",
-        "givenName": "Dulce",
-        "familyName": "Gonzalez"
-    },
-    {
-        "id": "2",
-        "givenName": "Juan",
-        "familyName": "Perez"
-    },
-    {
-        "id": "3",
-        "givenName": "Jorge",
-        "familyName": "Panes"
-    }
-];
+let employeesUtil = require('./../app/employees');
 
 router.get('/', function (req, res) {
-    res.send(employees);
+    employeesUtil.read({}).then((employees) => {
+        res.send(employees);
+    });
+});
+
+router.post('/create', function (req, res) {
+    let params = req.body;
+    employeesUtil.create(params).then(function (_response) {
+        res.status(201).json(_response)
+    }).catch(function (err) {
+        res.status(400).json({error: err});
+    });
 });
 
 module.exports = router;
