@@ -1,30 +1,11 @@
-const express = require('express');
-const routes = require('./routing');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
+let app = require('./app');
+let MongoUtil = require('./db');
+let playground = require('./playground.js');
 
-let app = express();
+const port = 3000;
 
-app.use(bodyParser.json());
-
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
-
-app.use(morgan('combined', {
-    skip: function (req, res) {
-        return res.statusCode < 400
-    }
-}));
-
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
+MongoUtil.connect().then((dbClient) => {
+    app.listen(port);
+    console.log("App listening on port: %o", port);
+    playground(app, dbClient);
 });
-
-for (let route in routes) {
-    if (routes.hasOwnProperty(route)) app.use(route, routes[route]);
-}
-
-app.listen(3000);
