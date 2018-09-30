@@ -1,19 +1,20 @@
 let express = require('express');
 let router = express.Router();
-
-let clients = [
-    {
-        "id": "1",
-        "name": "Pueblo Bonito"
-    },
-    {
-        "id": "0",
-        "name": "Operadora Polar"
-    }
-];
+let clientsUtil = require('./../app/clients');
 
 router.get('/', function (req, res) {
-    res.send(clients);
+    clientsUtil.read({}).then((clients) => {
+        res.send(clients);
+    });
+});
+
+router.post('/create', function (req, res) {
+    let params = req.body;
+    clientsUtil.create(params).then(function (_response) {
+        res.status(201).json(_response)
+    }).catch(function (err) {
+        res.status(400).json({error: err});
+    });
 });
 
 module.exports = router;
