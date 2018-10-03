@@ -1,42 +1,54 @@
 let MongoUtil = require('./../db');
 const {ObjectID} = require('mongodb'); // or ObjectID
+const models = require('./../db/model');
 
 module.exports = {
-    read: function (query) {
-        return new Promise((resolve, reject) => {
-            let dbClient = MongoUtil.getDatabaseClient();
+    read: function (id, load = []) {
+        let queryParams = {};
+        if (typeof id !== "undefined") queryParams["_id"] = id;
 
-            dbClient.collection("employees").find(query).toArray(function (err, result) {
-                if (err) reject(err);
-                resolve(result);
-            });
+        let query = models.Employee.find(queryParams);
+
+        return new Promise((resolve, reject) => {
+            query.exec()
+                .then(result => {
+                    resolve(result);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
         });
     },
     create: function (employeeObject) {
         return new Promise((resolve, reject) => {
-            let dbClient = MongoUtil.getDatabaseClient();
             let original_id = ObjectID();
 
-            let promise = dbClient.collection('employees').insertOne({
+            let promise = models.Employee.create({
                 "_id": original_id,
                 ...employeeObject
             });
 
             promise.then((result) => {
-                return dbClient.collection('employees').findOne({'_id': result.insertedId});
-            }).then((result) => {
                 resolve(result);
             }).catch(err => reject(err));
         });
     },
-    update: function (id, salesObject) {
+    update: function (employeeObject) {
         return new Promise((resolve, reject) => {
+            let promise = models.Employee.findOneAndUpdate({_id: employeeObject["_id"]}, employeeObject, {new: true});
 
+            promise.then((result) => {
+                resolve(result);
+            }).catch(err => reject(err));
         });
     },
     delete: function (id) {
         return new Promise((resolve, reject) => {
+            let promise = models.Employee.findOneAndDelete({_id: id});
 
+            promise.then((result) => {
+                resolve(result);
+            }).catch(err => reject(err));
         });
     }
 };
