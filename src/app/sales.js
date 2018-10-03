@@ -1,30 +1,29 @@
-let MongoUtil = require('./../db');
 const {ObjectID} = require('mongodb'); // or ObjectID
+const models = require('./../db/model');
 
 module.exports = {
-    read: function (query) {
-        return new Promise((resolve, reject) => {
-            let dbClient = MongoUtil.getDatabaseClient();
+    read: function (id, load) {
+        let queryParams = {};
+        if (typeof id !== "undefined") queryParams["_id"] = id;
 
-            dbClient.collection("sales").find(query).toArray(function (err, result) {
-                if (err) reject(err);
-                resolve(result);
-            });
+        let query = models.Sale.find(queryParams).populate('employee', 'givenName familyName').populate('client', 'name');
+
+        return new Promise((resolve, reject) => {
+            query.exec()
+                .then(result => {
+                    resolve(result);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
         });
     },
     create: function (salesObject) {
         return new Promise((resolve, reject) => {
-            let dbClient = MongoUtil.getDatabaseClient();
             let original_id = ObjectID();
-
-            let promise = dbClient.collection('sales').insertOne({
-                "_id": original_id,
-                ...salesObject
-            });
+            let promise = models.Sale.create({"_id": original_id, ...salesObject});
 
             promise.then((result) => {
-                return dbClient.collection('sales').findOne({'_id': result.insertedId});
-            }).then((result) => {
                 resolve(result);
             }).catch(err => reject(err));
         });
@@ -36,7 +35,11 @@ module.exports = {
     },
     delete: function (id) {
         return new Promise((resolve, reject) => {
+            let promise = models.Sale.findOneAndDelete({_id: id});
 
+            promise.then((result) => {
+                resolve(result);
+            }).catch(err => reject(err));
         });
     }
 };
