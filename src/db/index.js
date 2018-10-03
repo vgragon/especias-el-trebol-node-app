@@ -1,12 +1,12 @@
-const MongoClient = require('mongodb').MongoClient;
+let mongoose = require('mongoose');
 
 const url = "mongodb://vicentegrajeda:EspeciasTrebol1@ds163382.mlab.com:63382/especias-trebol";
 let _dbClient;
 
 const MongoUtil = {
     connect: function () {
-        return MongoClient.connect(url, {useNewUrlParser: true}).then(client => {
-            _dbClient = client.db('especias-trebol');
+        return mongoose.connect(url, {useNewUrlParser: true}).then(client => {
+            _dbClient = client;
             return _dbClient;
         });
     },
