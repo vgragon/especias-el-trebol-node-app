@@ -24,13 +24,20 @@ module.exports = {
             let promise = models.Sale.create({"_id": original_id, ...salesObject});
 
             promise.then((result) => {
+                let query = models.Sale.findOne({"_id": original_id}).populate('employee', 'givenName familyName').populate('client', 'name');
+                return query.exec();
+            }).then(result => {
                 resolve(result);
             }).catch(err => reject(err));
         });
     },
     update: function (id, salesObject) {
         return new Promise((resolve, reject) => {
+            let promise = models.Sale.findOneAndUpdate({_id: salesObject["_id"]}, salesObject, {new: true});
 
+            promise.then((result) => {
+                resolve(result);
+            }).catch(err => reject(err));
         });
     },
     delete: function (id) {
